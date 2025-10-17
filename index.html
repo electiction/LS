@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ส่งตำแหน่งไปแชท</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .location-info {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .location-info.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-telegram {
+            background: linear-gradient(45deg, #0088cc, #0066aa);
+        }
+        
+        .btn-whatsapp {
+            background: linear-gradient(45deg, #25D366, #1ea851);
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .coordinates {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 ส่งตำแหน่งไปแชท</h1>
+        
+        <div class="status" id="status">
+            กำลังขอตำแหน่งอัตโนมัติ...
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>กำลังขอตำแหน่ง...</p>
+        </div>
+        
+        <button class="btn" onclick="getLocation()" id="retryBtn" style="display: none;">
+            🔄 ลองใหม่
+        </button>
+        
+        <div class="location-info" id="locationInfo">
+            <h3>📍 ข้อมูลตำแหน่ง</h3>
+            <div class="coordinates">
+                <strong>ละติจูด:</strong> <span id="latitude"></span><br>
+                <strong>ลองจิจูด:</strong> <span id="longitude"></span><br>
+                <strong>ความแม่นยำ:</strong> <span id="accuracy"></span> เมตร
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn btn-telegram" onclick="sendToTelegram()">
+                    📱 ส่งไป Telegram
+                </button>
+                
+                <button class="btn btn-whatsapp" onclick="sendToWhatsApp()">
+                    💬 ส่งไป WhatsApp
+                </button>
+                
+                <button class="btn" onclick="shareToFacebook()" style="background: linear-gradient(45deg, #1877F2, #0A5F9A);">
+                    📘 แชร์ไป Facebook
+                </button>
+                
+                <button class="btn" onclick="shareToInstagram()" style="background: linear-gradient(45deg, #E4405F, #C13584);">
+                    📷 แชร์ไป Instagram
+                </button>
+                
+                <button class="btn" onclick="window.open('upload-instructions.html', '_blank')" style="background: linear-gradient(45deg, #FF6B6B, #EE5A24);">
+                    🚀 อัปโหลดง่ายๆ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLocation = null;
+        
+        // ฟังก์ชันขอตำแหน่งอัตโนมัติเมื่อเปิดหน้า
+        function autoGetLocation() {
+            const status = document.getElementById('status');
+            const loading = document.getElementById('loading');
+            
+            if (!navigator.geolocation) {
+                status.innerHTML = '❌ เบราว์เซอร์ไม่รองรับการขอตำแหน่ง';
+                return;
+            }
+            
+            status.style.display = 'none';
+            loading.style.display = 'block';
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    displayLocation();
+                },
+                function(error) {
+                    loading.style.display = 'none';
+                    status.style.display = 'block';
+                    document.getElementById('retryBtn').style.display = 'block';
+                    
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = '❌ ถูกปฏิเสธการเข้าถึงตำแหน่ง - กดปุ่มด้านล่างเพื่อลองใหม่';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = '❌ ไม่สามารถเข้าถึงตำแหน่งได้ - กดปุ่มด้านล่างเพื่อลองใหม่';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = '❌ หมดเวลารอการขอตำแหน่ง - กดปุ่มด้านล่างเพื่อลองใหม่';
+                            break;
+                        default:
+                            errorMessage = '❌ เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ - กดปุ่มด้านล่างเพื่อลองใหม่';
+                            break;
+                    }
+                    status.innerHTML = errorMessage;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        function getLocation() {
+            autoGetLocation();
+        }
+        
+        function displayLocation() {
+            const loading = document.getElementById('loading');
+            const locationInfo = document.getElementById('locationInfo');
+            const status = document.getElementById('status');
+            const retryBtn = document.getElementById('retryBtn');
+            
+            loading.style.display = 'none';
+            status.style.display = 'none';
+            retryBtn.style.display = 'none';
+            
+            document.getElementById('latitude').textContent = currentLocation.latitude.toFixed(6);
+            document.getElementById('longitude').textContent = currentLocation.longitude.toFixed(6);
+            document.getElementById('accuracy').textContent = Math.round(currentLocation.accuracy);
+            
+            locationInfo.classList.add('show');
+        }
+        
+        function sendToTelegram() {
+            if (!currentLocation) return;
+            
+            const message = `📍 ตำแหน่งปัจจุบัน:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const telegramUrl = `https://t.me/share/url?url=${encodedMessage}`;
+            
+            window.open(telegramUrl, '_blank');
+        }
+        
+        function sendToWhatsApp() {
+            if (!currentLocation) return;
+            
+            const message = `📍 ตำแหน่งปัจจุบัน:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        function shareToFacebook() {
+            if (!currentLocation) return;
+            
+            const message = `📍 ตำแหน่งปัจจุบัน:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodedMessage}`;
+            
+            window.open(facebookUrl, '_blank');
+        }
+        
+        function shareToInstagram() {
+            if (!currentLocation) return;
+            
+            const message = `📍 ตำแหน่งปัจจุบัน:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`;
+            
+            // Instagram ไม่มี direct share API แต่สามารถ copy ข้อความได้
+            navigator.clipboard.writeText(message).then(function() {
+                alert('📋 คัดลอกข้อความแล้ว! ไปแปะใน Instagram Story หรือ Post ได้เลย');
+            }).catch(function() {
+                // Fallback สำหรับเบราว์เซอร์ที่ไม่รองรับ clipboard
+                const textArea = document.createElement('textarea');
+                textArea.value = message;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('📋 คัดลอกข้อความแล้ว! ไปแปะใน Instagram Story หรือ Post ได้เลย');
+            });
+        }
+        
+        // เปิดใช้งานเมื่อโหลดหน้าเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📍 ระบบส่งตำแหน่งพร้อมใช้งาน');
+            // ขอตำแหน่งอัตโนมัติเมื่อเปิดหน้า
+            autoGetLocation();
+        });
+    </script>
+</body>
+</html>
