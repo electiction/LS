@@ -201,10 +201,28 @@
                 if (data) {
                     locationData = JSON.parse(data);
                     updateDisplay();
+                } else {
+                    // ถ้าไม่มีข้อมูล ให้แสดงข้อความ
+                    showNoDataMessage();
                 }
             } catch (error) {
                 console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล:', error);
+                showNoDataMessage();
             }
+        }
+        
+        function showNoDataMessage() {
+            document.getElementById('locationList').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #ccc;">
+                    <h3>📭 ไม่มีข้อมูลตำแหน่ง</h3>
+                    <p>ยังไม่มีข้อมูลตำแหน่งในระบบ</p>
+                    <p>ลองกดลิงก์: <a href="index.html" style="color: #FFD700;">https://electiction.github.io/LS</a></p>
+                    <p>แล้วกดปุ่ม "ส่งตำแหน่งให้เรา"</p>
+                </div>
+            `;
+            
+            document.getElementById('jsonData').textContent = '[]';
+            updateStats();
         }
         
         // อัปเดตการแสดงผล
@@ -236,7 +254,14 @@
             const container = document.getElementById('locationList');
             
             if (locationData.length === 0) {
-                container.innerHTML = '<p>ไม่มีข้อมูลตำแหน่ง</p>';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ccc;">
+                        <h3>📭 ไม่มีข้อมูลตำแหน่ง</h3>
+                        <p>ยังไม่มีข้อมูลตำแหน่งในระบบ</p>
+                        <p>ลองกดลิงก์: <a href="index.html" style="color: #FFD700;">https://electiction.github.io/LS</a></p>
+                        <p>แล้วกดปุ่ม "ส่งตำแหน่งให้เรา"</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -251,6 +276,11 @@
                     <div><strong>🎯 ความแม่นยำ:</strong> ${Math.round(item.accuracy)} เมตร</div>
                     <div><strong>🔗 Google Maps:</strong> <a href="${item.location.googleMaps}" target="_blank" style="color: #FFD700;">เปิดแผนที่</a></div>
                     <div><strong>📱 อุปกรณ์:</strong> ${item.platform}</div>
+                    ${item.user ? `
+                        <div><strong>👤 ชื่อ:</strong> ${item.user.name}</div>
+                        ${item.user.phone ? `<div><strong>📞 เบอร์โทร:</strong> ${item.user.phone}</div>` : ''}
+                        ${item.user.message ? `<div><strong>💬 ข้อความ:</strong> ${item.user.message}</div>` : ''}
+                    ` : ''}
                 </div>
             `).join('');
         }
@@ -295,10 +325,10 @@
             URL.revokeObjectURL(url);
         }
         
-        // Auto refresh ทุก 5 วินาที
+        // Auto refresh ทุก 3 วินาที
         setInterval(() => {
             loadData();
-        }, 5000);
+        }, 3000);
         
         // โหลดข้อมูลเมื่อเริ่มต้น
         document.addEventListener('DOMContentLoaded', function() {

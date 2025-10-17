@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 ทดสอบระบบส่งตำแหน่ง</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin: 10px 0;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-test {
+            background: linear-gradient(45deg, #FF6B6B, #EE5A24);
+        }
+        
+        .btn-dashboard {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .step {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .step-number {
+            background: #4CAF50;
+            color: #000;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .json-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 ทดสอบระบบส่งตำแหน่ง</h1>
+        
+        <div class="status" id="status">
+            พร้อมทดสอบระบบ
+        </div>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>ทดสอบการขอตำแหน่ง</strong>
+            <p>กดปุ่มด้านล่างเพื่อทดสอบการขอตำแหน่ง</p>
+        </div>
+        
+        <button class="btn btn-test" onclick="testLocation()">
+            📍 ทดสอบขอตำแหน่ง
+        </button>
+        
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>ดูข้อมูลใน localStorage</strong>
+            <p>ข้อมูลจะถูกเก็บใน localStorage ของเบราว์เซอร์</p>
+        </div>
+        
+        <button class="btn" onclick="showLocalStorage()">
+            📊 ดูข้อมูลใน localStorage
+        </button>
+        
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>เปิด Dashboard</strong>
+            <p>ดูข้อมูลใน Dashboard</p>
+        </div>
+        
+        <a href="dashboard.html" class="btn btn-dashboard" target="_blank">
+            📈 เปิด Dashboard
+        </a>
+        
+        <div id="localStorageData" class="json-viewer" style="display: none;">
+            กำลังโหลดข้อมูล...
+        </div>
+    </div>
+
+    <script>
+        function testLocation() {
+            const status = document.getElementById('status');
+            status.innerHTML = '🔄 กำลังขอตำแหน่ง...';
+            
+            if (!navigator.geolocation) {
+                status.innerHTML = '❌ เบราว์เซอร์ไม่รองรับการขอตำแหน่ง';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const locationData = {
+                        id: Date.now(),
+                        timestamp: new Date().toISOString(),
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        screen: {
+                            width: screen.width,
+                            height: screen.height
+                        },
+                        location: {
+                            googleMaps: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`,
+                            coordinates: [position.coords.longitude, position.coords.latitude]
+                        },
+                        user: {
+                            name: 'Test User',
+                            phone: null,
+                            message: 'ทดสอบระบบ'
+                        }
+                    };
+                    
+                    // เก็บข้อมูลใน localStorage
+                    try {
+                        const existingData = JSON.parse(localStorage.getItem('locationData') || '[]');
+                        existingData.push(locationData);
+                        localStorage.setItem('locationData', JSON.stringify(existingData));
+                        
+                        status.innerHTML = '✅ ทดสอบสำเร็จ! ข้อมูลถูกเก็บใน localStorage แล้ว';
+                        showLocalStorage();
+                    } catch (error) {
+                        status.innerHTML = '❌ เกิดข้อผิดพลาดในการเก็บข้อมูล: ' + error.message;
+                    }
+                },
+                function(error) {
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = '❌ ถูกปฏิเสธการเข้าถึงตำแหน่ง';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = '❌ ไม่สามารถเข้าถึงตำแหน่งได้';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = '❌ หมดเวลารอการขอตำแหน่ง';
+                            break;
+                        default:
+                            errorMessage = '❌ เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
+                            break;
+                    }
+                    status.innerHTML = errorMessage;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        function showLocalStorage() {
+            const container = document.getElementById('localStorageData');
+            container.style.display = 'block';
+            
+            try {
+                const data = localStorage.getItem('locationData');
+                if (data) {
+                    const parsedData = JSON.parse(data);
+                    container.textContent = JSON.stringify(parsedData, null, 2);
+                } else {
+                    container.textContent = '[]';
+                }
+            } catch (error) {
+                container.textContent = 'เกิดข้อผิดพลาด: ' + error.message;
+            }
+        }
+        
+        // โหลดข้อมูลเมื่อเริ่มต้น
+        document.addEventListener('DOMContentLoaded', function() {
+            showLocalStorage();
+        });
+    </script>
+</body>
+</html>
