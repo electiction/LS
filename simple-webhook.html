@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 ตั้งค่า Webhook ง่ายๆ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .method {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .method h3 {
+            color: #4CAF50;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin: 10px 0;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-ngrok {
+            background: linear-gradient(45deg, #00C7B7, #009688);
+        }
+        
+        .btn-heroku {
+            background: linear-gradient(45deg, #79589F, #6A4C93);
+        }
+        
+        .btn-vercel {
+            background: linear-gradient(45deg, #000000, #333333);
+        }
+        
+        .step {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .step-number {
+            background: #4CAF50;
+            color: #000;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border-left: 4px solid #FFC107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 ตั้งค่า Webhook ง่ายๆ</h1>
+        <p style="text-align: center; font-size: 1.2em; margin-bottom: 30px;">
+            เลือกวิธีที่ง่ายที่สุดสำหรับคุณ
+        </p>
+        
+        <div class="method">
+            <h3>⚡ วิธีที่ 1: ใช้ ngrok (แนะนำ - ง่ายที่สุด)</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                ติดตั้ง ngrok: <a href="https://ngrok.com/download" target="_blank" style="color: #4CAF50;">ดาวน์โหลดที่นี่</a>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                รัน webhook server:
+            </div>
+            <div class="code">node webhook.js</div>
+            <div class="step">
+                <span class="step-number">3</span>
+                เปิด terminal ใหม่ และรัน:
+            </div>
+            <div class="code">ngrok http 3000</div>
+            <div class="step">
+                <span class="step-number">4</span>
+                คัดลอก URL ที่ได้ (เช่น: https://abc123.ngrok.io)
+            </div>
+            <div class="step">
+                <span class="step-number">5</span>
+                แก้ไข URL ในไฟล์ index.html บรรทัด 438
+            </div>
+            <div class="code">const webhookUrl = 'https://abc123.ngrok.io/webhook/location';</div>
+            <a href="https://ngrok.com/download" target="_blank" class="btn btn-ngrok">
+                🚀 ไปที่ ngrok
+            </a>
+        </div>
+        
+        <div class="method">
+            <h3>🔥 วิธีที่ 2: ใช้ Heroku (ฟรี)</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                ติดตั้ง Heroku CLI: <a href="https://devcenter.heroku.com/articles/heroku-cli" target="_blank" style="color: #4CAF50;">ดาวน์โหลดที่นี่</a>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                Login และสร้าง app:
+            </div>
+            <div class="code">heroku login
+heroku create your-app-name</div>
+            <div class="step">
+                <span class="step-number">3</span>
+                Deploy:
+            </div>
+            <div class="code">git add .
+git commit -m "Add webhook server"
+git push heroku main</div>
+            <div class="step">
+                <span class="step-number">4</span>
+                ได้ URL: https://your-app-name.herokuapp.com
+            </div>
+            <div class="step">
+                <span class="step-number">5</span>
+                แก้ไข URL ในไฟล์ index.html บรรทัด 438
+            </div>
+            <div class="code">const webhookUrl = 'https://your-app-name.herokuapp.com/webhook/location';</div>
+            <a href="https://devcenter.heroku.com/articles/heroku-cli" target="_blank" class="btn btn-heroku">
+                🚀 ไปที่ Heroku
+            </a>
+        </div>
+        
+        <div class="method">
+            <h3>⚡ วิธีที่ 3: ใช้ Vercel (ฟรี)</h3>
+            <div class="step">
+                <span class="step-number">1</span>
+                ติดตั้ง Vercel CLI:
+            </div>
+            <div class="code">npm install -g vercel</div>
+            <div class="step">
+                <span class="step-number">2</span>
+                Deploy:
+            </div>
+            <div class="code">vercel</div>
+            <div class="step">
+                <span class="step-number">3</span>
+                ได้ URL: https://your-project.vercel.app
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                แก้ไข URL ในไฟล์ index.html บรรทัด 438
+            </div>
+            <div class="code">const webhookUrl = 'https://your-project.vercel.app/webhook/location';</div>
+            <a href="https://vercel.com" target="_blank" class="btn btn-vercel">
+                🚀 ไปที่ Vercel
+            </a>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ ข้อสำคัญ:</strong><br>
+            • ต้องแก้ไข URL ในไฟล์ index.html บรรทัด 438<br>
+            • ต้องอัปโหลดไฟล์ใหม่หลังจากแก้ไข<br>
+            • ใช้ HTTPS เพื่อความปลอดภัย
+        </div>
+        
+        <div class="success">
+            <strong>✅ หลังจากตั้งค่าเสร็จ:</strong><br>
+            • เปิดลิงก์: https://electiction.github.io/LS<br>
+            • อนุญาตการเข้าถึงตำแหน่ง<br>
+            • กดปุ่ม "ส่งตำแหน่งให้เรา"<br>
+            • ดูข้อมูลใน Dashboard
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="index.html" class="btn" style="background: linear-gradient(45deg, #FF6B6B, #EE5A24);">
+                📍 กลับไปหน้าแอป
+            </a>
+        </div>
+    </div>
+</body>
+</html>
