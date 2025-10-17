@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Dashboard - ข้อมูลตำแหน่ง</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .data-table {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        th {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-refresh {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        
+        .btn-export {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+        
+        .json-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .location-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .location-coords {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Dashboard - ข้อมูลตำแหน่ง</h1>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div>จำนวนทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayCount">0</div>
+                <div>วันนี้</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="latestTime">-</div>
+                <div>ล่าสุด</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn btn-refresh" onclick="refreshData()">🔄 รีเฟรช</button>
+            <button class="btn btn-clear" onclick="clearData()">🗑️ ล้างข้อมูล</button>
+            <button class="btn btn-export" onclick="exportData()">📥 Export JSON</button>
+        </div>
+        
+        <div class="data-table">
+            <h3>📍 ข้อมูลตำแหน่งล่าสุด</h3>
+            <div id="locationList" class="loading">
+                <div class="spinner"></div>
+                <p>กำลังโหลดข้อมูล...</p>
+            </div>
+        </div>
+        
+        <div class="data-table">
+            <h3>📋 ข้อมูล JSON</h3>
+            <div id="jsonData" class="json-viewer">
+                กำลังโหลดข้อมูล...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let locationData = [];
+        
+        // โหลดข้อมูลจาก localStorage
+        function loadData() {
+            try {
+                const data = localStorage.getItem('locationData');
+                if (data) {
+                    locationData = JSON.parse(data);
+                    updateDisplay();
+                }
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล:', error);
+            }
+        }
+        
+        // อัปเดตการแสดงผล
+        function updateDisplay() {
+            updateStats();
+            updateLocationList();
+            updateJsonData();
+        }
+        
+        // อัปเดตสถิติ
+        function updateStats() {
+            document.getElementById('totalCount').textContent = locationData.length;
+            
+            const today = new Date().toDateString();
+            const todayCount = locationData.filter(item => 
+                new Date(item.timestamp).toDateString() === today
+            ).length;
+            document.getElementById('todayCount').textContent = todayCount;
+            
+            if (locationData.length > 0) {
+                const latest = locationData[locationData.length - 1];
+                const latestTime = new Date(latest.timestamp).toLocaleString('th-TH');
+                document.getElementById('latestTime').textContent = latestTime;
+            }
+        }
+        
+        // อัปเดตรายการตำแหน่ง
+        function updateLocationList() {
+            const container = document.getElementById('locationList');
+            
+            if (locationData.length === 0) {
+                container.innerHTML = '<p>ไม่มีข้อมูลตำแหน่ง</p>';
+                return;
+            }
+            
+            const recentData = locationData.slice(-10).reverse();
+            
+            container.innerHTML = recentData.map(item => `
+                <div class="location-item">
+                    <div><strong>⏰ เวลา:</strong> ${new Date(item.timestamp).toLocaleString('th-TH')}</div>
+                    <div class="location-coords">
+                        <strong>📍 ตำแหน่ง:</strong> ${item.latitude.toFixed(6)}, ${item.longitude.toFixed(6)}
+                    </div>
+                    <div><strong>🎯 ความแม่นยำ:</strong> ${Math.round(item.accuracy)} เมตร</div>
+                    <div><strong>🔗 Google Maps:</strong> <a href="${item.location.googleMaps}" target="_blank" style="color: #FFD700;">เปิดแผนที่</a></div>
+                    <div><strong>📱 อุปกรณ์:</strong> ${item.platform}</div>
+                </div>
+            `).join('');
+        }
+        
+        // อัปเดตข้อมูล JSON
+        function updateJsonData() {
+            const container = document.getElementById('jsonData');
+            container.textContent = JSON.stringify(locationData, null, 2);
+        }
+        
+        // รีเฟรชข้อมูล
+        function refreshData() {
+            loadData();
+        }
+        
+        // ล้างข้อมูล
+        function clearData() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะล้างข้อมูลทั้งหมด?')) {
+                localStorage.removeItem('locationData');
+                locationData = [];
+                updateDisplay();
+                alert('ล้างข้อมูลเรียบร้อยแล้ว');
+            }
+        }
+        
+        // Export ข้อมูล
+        function exportData() {
+            if (locationData.length === 0) {
+                alert('ไม่มีข้อมูลให้ Export');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(locationData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `location-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+        
+        // Auto refresh ทุก 5 วินาที
+        setInterval(() => {
+            loadData();
+        }, 5000);
+        
+        // โหลดข้อมูลเมื่อเริ่มต้น
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+    </script>
+</body>
+</html>
