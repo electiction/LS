@@ -135,6 +135,19 @@
             🔄 ลองใหม่
         </button>
         
+        <!-- ฟอร์มรับข้อมูลผู้ใช้ -->
+        <div class="location-info" id="userForm" style="display: none;">
+            <h3>📝 กรอกข้อมูลเพื่อส่งตำแหน่ง</h3>
+            <div style="margin: 20px 0;">
+                <input type="text" id="userName" placeholder="ชื่อของคุณ" style="width: 100%; padding: 15px; border-radius: 10px; border: none; margin: 10px 0; font-size: 16px;">
+                <input type="text" id="userPhone" placeholder="เบอร์โทรศัพท์ (ไม่บังคับ)" style="width: 100%; padding: 15px; border-radius: 10px; border: none; margin: 10px 0; font-size: 16px;">
+                <textarea id="userMessage" placeholder="ข้อความเพิ่มเติม (ไม่บังคับ)" style="width: 100%; padding: 15px; border-radius: 10px; border: none; margin: 10px 0; font-size: 16px; height: 80px; resize: vertical;"></textarea>
+            </div>
+            <button class="btn" onclick="sendLocationData()" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                📤 ส่งตำแหน่งให้เรา
+            </button>
+        </div>
+        
         <div class="location-info" id="locationInfo">
             <h3>📍 ข้อมูลตำแหน่ง</h3>
             <div class="coordinates">
@@ -230,6 +243,7 @@
         function displayLocation() {
             const loading = document.getElementById('loading');
             const locationInfo = document.getElementById('locationInfo');
+            const userForm = document.getElementById('userForm');
             const status = document.getElementById('status');
             const retryBtn = document.getElementById('retryBtn');
             
@@ -241,7 +255,9 @@
             document.getElementById('longitude').textContent = currentLocation.longitude.toFixed(6);
             document.getElementById('accuracy').textContent = Math.round(currentLocation.accuracy);
             
-            locationInfo.classList.add('show');
+            // แสดงฟอร์มรับข้อมูลผู้ใช้
+            userForm.style.display = 'block';
+            userForm.classList.add('show');
         }
         
         function sendToTelegram() {
@@ -319,6 +335,62 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 document.body.removeChild(textArea);
                 alert('📋 คัดลอกข้อความแล้ว! ไปแปะใน Instagram Story หรือ Post ได้เลย');
             });
+        }
+        
+        function sendLocationData() {
+            const userName = document.getElementById('userName').value;
+            const userPhone = document.getElementById('userPhone').value;
+            const userMessage = document.getElementById('userMessage').value;
+            
+            if (!userName.trim()) {
+                alert('กรุณากรอกชื่อของคุณ');
+                return;
+            }
+            
+            if (!currentLocation) {
+                alert('ไม่พบข้อมูลตำแหน่ง');
+                return;
+            }
+            
+            // สร้างข้อความที่จะส่ง
+            const message = `📍 ข้อมูลตำแหน่งใหม่
+            
+👤 ชื่อ: ${userName}
+📞 เบอร์โทร: ${userPhone || 'ไม่ระบุ'}
+💬 ข้อความ: ${userMessage || 'ไม่ระบุ'}
+
+📍 ตำแหน่ง:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}
+
+⏰ เวลา: ${new Date().toLocaleString('th-TH')}`;
+            
+            // ส่งไป Telegram
+            const encodedMessage = encodeURIComponent(message);
+            const telegramUrl = `https://t.me/share/url?url=${encodedMessage}`;
+            
+            // ส่งไป WhatsApp
+            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+            
+            // แสดงตัวเลือกการส่ง
+            const choice = confirm('เลือกวิธีส่งข้อมูล:\n\nOK = ส่งไป Telegram\nCancel = ส่งไป WhatsApp');
+            
+            if (choice) {
+                window.open(telegramUrl, '_blank');
+            } else {
+                window.open(whatsappUrl, '_blank');
+            }
+            
+            // แสดงข้อความยืนยัน
+            alert('✅ ส่งข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลตำแหน่งของคุณถูกส่งไปแล้ว');
+            
+            // ซ่อนฟอร์มและแสดงข้อมูลตำแหน่ง
+            document.getElementById('userForm').style.display = 'none';
+            document.getElementById('locationInfo').classList.add('show');
         }
         
         // เปิดใช้งานเมื่อโหลดหน้าเสร็จ
