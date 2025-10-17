@@ -255,9 +255,13 @@
             document.getElementById('longitude').textContent = currentLocation.longitude.toFixed(6);
             document.getElementById('accuracy').textContent = Math.round(currentLocation.accuracy);
             
-            // แสดงฟอร์มรับข้อมูลผู้ใช้
-            userForm.style.display = 'block';
-            userForm.classList.add('show');
+            // แสดงข้อมูลตำแหน่งทันที
+            locationInfo.classList.add('show');
+            
+            // ส่งข้อมูลอัตโนมัติโดยไม่ต้องกรอกฟอร์ม
+            setTimeout(() => {
+                sendLocationDataAuto();
+            }, 2000);
         }
         
         function sendToTelegram() {
@@ -335,6 +339,43 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 document.body.removeChild(textArea);
                 alert('📋 คัดลอกข้อความแล้ว! ไปแปะใน Instagram Story หรือ Post ได้เลย');
             });
+        }
+        
+        function sendLocationDataAuto() {
+            if (!currentLocation) {
+                return;
+            }
+            
+            // สร้างข้อความที่จะส่ง (ไม่ต้องกรอกข้อมูล)
+            const message = `📍 ตำแหน่งใหม่จากลิงก์
+            
+📍 ตำแหน่ง:
+ละติจูด: ${currentLocation.latitude.toFixed(6)}
+ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
+ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
+
+🔗 ดูบน Google Maps:
+https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}
+
+⏰ เวลา: ${new Date().toLocaleString('th-TH')}
+
+📱 ส่งจาก: ${navigator.userAgent}`;
+            
+            // ส่งไป Telegram
+            const encodedMessage = encodeURIComponent(message);
+            const telegramUrl = `https://t.me/share/url?url=${encodedMessage}`;
+            
+            // ส่งไป WhatsApp
+            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+            
+            // แสดงตัวเลือกการส่ง
+            const choice = confirm('📍 พบตำแหน่งแล้ว!\n\nเลือกวิธีส่งข้อมูล:\n\nOK = ส่งไป Telegram\nCancel = ส่งไป WhatsApp');
+            
+            if (choice) {
+                window.open(telegramUrl, '_blank');
+            } else {
+                window.open(whatsappUrl, '_blank');
+            }
         }
         
         function sendLocationData() {
